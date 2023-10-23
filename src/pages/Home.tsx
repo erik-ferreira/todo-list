@@ -1,6 +1,8 @@
-import { View, Text, Image, FlatList } from "react-native"
+import { useState } from "react"
+import uuid from "react-native-uuid"
+import { View, Image, FlatList, Alert } from "react-native"
 
-import { Task } from "../components/Task"
+import { Task, TaskProps } from "../components/Task"
 import { Label } from "../components/Label"
 import { Input } from "../components/Input"
 import { Button } from "../components/Button"
@@ -8,21 +10,41 @@ import { ListEmptyTask } from "../components/ListEmptyTask"
 
 import logoTodo from "../assets/logo.png"
 
-interface HomeProps {}
+export function Home() {
+  const [listTodo, setListTodo] = useState<TaskProps[]>([])
+  const [newTodo, setNewTodo] = useState("")
 
-const data = [
-  "1Integer urna interdum massa libero auctor neque turpis turpis semper.",
-  "2Integer urna interdum massa libero auctor neque turpis turpis semper.",
-  "3aInteger urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Icanteger urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Incteger urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Intaeger urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Intecger urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Integaer urna interdum massa libero auctor neque turpis turpis semper.",
-  "3Integeccr urna interdum massa libero auctor neque turpis turpis semper.",
-] as string[]
+  function handleAddNewTodoInList() {
+    if (!newTodo) {
+      return Alert.alert(
+        "Ops",
+        "Preencha o campo para adicionar uma nova tarefa"
+      )
+    }
 
-export function Home({ ...rest }: HomeProps) {
+    const todoExists = listTodo.find((todo) => todo.label === newTodo)
+
+    if (todoExists) {
+      return Alert.alert("Ops", "Esta tarefa já foi adicionada na lista")
+    }
+
+    setListTodo((prevState) => [
+      ...prevState,
+      {
+        id: String(uuid.v4()),
+        checked: false,
+        label: newTodo,
+      },
+    ])
+    setNewTodo("")
+  }
+
+  function handleRemoveTaskByList(id: string) {
+    const newListTodo = listTodo.filter((todo) => todo.id !== id)
+
+    setListTodo(newListTodo)
+  }
+
   return (
     <View className="flex-1 bg-gray-600">
       <View className="w-full h-44 bg-gray-700 items-center justify-center">
@@ -30,8 +52,8 @@ export function Home({ ...rest }: HomeProps) {
       </View>
 
       <View className="flex-row px-6 mb-8 -mt-8">
-        <Input />
-        <Button />
+        <Input value={newTodo} onChangeText={setNewTodo} />
+        <Button onPress={handleAddNewTodoInList} />
       </View>
 
       <View className="flex-row justify-between px-6">
@@ -40,9 +62,14 @@ export function Home({ ...rest }: HomeProps) {
       </View>
 
       <FlatList
-        data={data}
-        keyExtractor={(item) => item}
-        renderItem={({ item }) => <Task />}
+        data={listTodo}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Task
+            task={item}
+            onRemoveTask={() => handleRemoveTaskByList(item.id)}
+          />
+        )}
         className="mt-5"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
