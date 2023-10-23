@@ -29,7 +29,7 @@ export function Label({
         {label.label}
       </Text>
       <Text className="py-0.5 px-2 bg-gray-400 rounded-full text-gray-200">
-        0
+        {amount}
       </Text>
     </View>
   )
